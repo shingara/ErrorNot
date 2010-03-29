@@ -12,6 +12,7 @@ class Error
   key :unresolved_at, Time
   key :resolved_at, Time
   key :resolveds_at, Array
+  key :error_id, ObjectId
 
   key :message, String, :required => true
 
@@ -25,8 +26,8 @@ class Error
   has_many :comments
   include_errors_from :comments
 
-  has_many :same_errors, :class_name => 'ErrorEmbedded'
-  include_errors_from :same_errors
+  has_many :same_errors, :class_name => 'Error', :foreign_key => 'error_id'
+  belongs_to :root_error, :class_name => 'Error', :foreign_key => 'error_id'
 
   # To keep track of some metrics:
   key :nb_comments, Integer, :required => true, :default => 0
@@ -35,11 +36,13 @@ class Error
   ## Callback
   before_create :define_unresolved_at
 
+  before_validation :fill_error
+
   before_save :update_comments
   before_save :update_count
   before_save :reactive_if_new_error
 
-  after_create :send_notify
+  after_create :send_notify, :unless => :error_id
 
   after_save :update_nb_errors_in_project
   after_save :update_keywords
@@ -89,8 +92,12 @@ class Error
   ##
   # Call by update_last_raised_at
   def update_last_raised_at_task
-    last_raised_at = same_errors.empty? ? raised_at : same_errors.sort_by(&:raised_at).last.raised_at
-    Error.collection.update({:_id => _id}, {'$set' => {:last_raised_at => last_raised_at.utc}})
+    unless error_id
+      Error.collection.update({:_id => _id}, {'$set' => {:last_raised_at => raised_at.utc}})
+    else
+      last_raised_at = Error.first(:error_id => error_id, :order => 'raised_at DESC').raised_at
+      Error.collection.update({:_id => error_id}, {'$set' => {:last_raised_at => last_raised_at.utc}})
+    end
   end
 
   ##
@@ -121,7 +128,11 @@ class Error
   private
 
   def resend_notify
-    send_notify if !resolved? && same_errors.length < 1 && new_same_error?
+    if error_id
+      root_error.resend_notify
+    else
+      send_notify if !resolved? && same_errors.length < 1 && new_same_error?
+    end
   end
 
   ##
@@ -130,9 +141,13 @@ class Error
   # Resend a notification if was marked as resolved and re-raised.
   #
   def reactive_if_new_error
-    if self.resolved && new_same_error?
-      self.resolved = false
-      send_notify if same_errors.length > 0
+    if error_id
+      root_error.reactive_if_new_error
+    else
+      if self.resolved && new_same_error?
+        self.resolved = false
+        send_notify if same_errors.length > 0
+      end
     end
   end
 
@@ -143,6 +158,13 @@ class Error
 
   def define_unresolved_at
     self.unresolved_at = Time.now unless self.unresolved_at
+  end
+
+  def fill_error
+    if error_id
+      self.message = root_error.message
+      self.project_id = root_error.project_id
+    end
   end
 
 end
