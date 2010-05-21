@@ -59,6 +59,12 @@ class Error
     save!
   end
 
+  def same_errors_most_recent(page, per_page=10)
+    same_errors.paginate(:order => 'raised_at DESC',
+                         :per_page => per_page,
+                         :page => page)
+  end
+
 
   ##
   # code to update keywords
