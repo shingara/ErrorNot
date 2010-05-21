@@ -11,7 +11,7 @@
   %p
     %label
       Limit to:
-      = select_tag 'resolved', options_for_select({:resolved => 'y', :pending => 'n', :all => 'a'}, params[:resolved] || nil)
+      = select_tag 'resolved', options_for_select({:resolved => 'y', :pending => 'n', :all => 'a'}, params[:resolved] || nil), :id => 'select_resolved'
     %label
       Order by:
       = select_tag 'sort_by', options_for_select({:date => 'last_raised_at', 'number of comments' => 'nb_comments', 'number of errors' => 'count'}, params[:sort_by] || 'last_raised_at')
