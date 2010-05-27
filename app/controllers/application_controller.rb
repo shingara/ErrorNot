@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
   # Scrub sensitive parameters from your log
   # filter_parameter_logging :password
 
-  rescue_from Mongo::InvalidObjectID do
+  rescue_from BSON::InvalidObjectID do
     render_404
   end
 

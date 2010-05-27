@@ -6,7 +6,6 @@ class ErrorEmbedded
   key :request, Hash
   key :environment, Hash
   key :data, Hash
-  key :error_id, ObjectId
 
   belongs_to :root_error, :class_name => 'Error', :foreign_key => 'error_id'
 
@@ -46,14 +45,12 @@ class ErrorEmbedded
   # Call by update_last_raised_at
   def update_last_raised_at
     if root_error.last_raised_at.utc < raised_at.utc
-      root_error.last_raised_at = raised_at
-      root_error.save
+      Error.collection.update({:_id => root_error.id}, {"$set" => {:last_raised_at => raised_at.utc}})
     end
   end
 
   def update_error_count
-    root_error.update_count
-    root_error.save
+    Error.collection.update({:_id => root_error.id}, {'$set' => {:count => root_error.reload.update_count}}, {:safe => true})
   end
 
 end

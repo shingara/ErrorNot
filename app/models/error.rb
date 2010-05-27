@@ -16,7 +16,7 @@ class Error
   key :message, String, :required => true
 
   # Denormalisation
-  key :_keywords, Array, :index => true
+  key :_keywords, Array, :index => true, :default => []
   key :last_raised_at, Time
 
   key :project_id, ObjectId, :required => true, :index => true
@@ -33,8 +33,7 @@ class Error
   key :count, Integer, :required => true, :default => 1 # nb of same errors
 
   ## Callback
-  before_create :define_unresolved_at
-  before_create :update_last_raised_at
+  before_validation :update_last_raised_at
 
   before_save :update_comments
   before_save :update_count
@@ -102,7 +101,7 @@ class Error
     # check if string and replace it by a bool. Controller send String, not bool
     resolution = resolution == 'true' if resolution.kind_of?(String)
     if old_resolution && !resolution
-      self.unresolved_at = Time.now
+      self.unresolved_at = Time.now.utc
     end
 
     if !old_resolution && resolution
@@ -114,12 +113,9 @@ class Error
 
   private
 
-  def define_unresolved_at
-    self.unresolved_at = Time.now unless self.unresolved_at
-  end
-
   def update_last_raised_at
-    self.last_raised_at ||= raised_at
+    self.last_raised_at ||= self.raised_at
+    self.unresolved_at ||= self.raised_at
   end
 
 end

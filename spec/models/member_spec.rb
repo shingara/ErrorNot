@@ -34,12 +34,12 @@ describe Member do
       member = make_member(:notify_by_digest => false)
       member.notify_by_digest = true
       member.save
-      member.digest_send_at.should be_close(Time.now.utc, 1.seconds)
+      member.digest_send_at.should be_close(Time.now.utc, 2.seconds)
     end
 
     it 'should be nil if notify_by_define become false' do
       member = make_member(:notify_by_digest => true)
-      member.digest_send_at.should be_close(Time.now.utc, 1.seconds)
+      member.digest_send_at.should be_close(Time.now.utc, 2.seconds)
       member.notify_by_digest = false
       member.save
       member.digest_send_at.should be_nil
@@ -88,12 +88,13 @@ describe Member do
       member = make_member(:notify_by_digest => true,
                            :digest_send_at => 1.minute.ago.utc)
       errors_not_digest_send = 2.of { Factory(:error,
+                                              :raised_at => Time.now.utc,
                                               :project => member._root_document).reload }
       2.of { Factory(:error,
                      :unresolved_at => 2.minutes.ago.utc,
                      :project => member._root_document) }
-      UserMailer.expects(:deliver_error_digest_notify).with(member.email,
-                                                            errors_not_digest_send.sort_by(&:last_raised_at))
+      UserMailer.expects(:deliver_error_digest_notify).with { |email, errors|
+        email == member.email && errors.map(&:id).sort == errors_not_digest_send.map(&:id).sort }
       member.send_digest.should be_true
       Project.find(member._root_document.id).member(member.user).digest_send_at.should be_close(Time.now.utc, 1.seconds)
     end
