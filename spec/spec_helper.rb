@@ -57,6 +57,12 @@ Spec::Runner.configure do |config|
     end
   end
 
+  config.include Delorean
+
+  config.before(:each) do
+    back_to_the_present
+  end
+
 end
 
 require 'blueprints'
@@ -66,7 +72,7 @@ class ActionController::TestCase
   include Devise::TestHelpers
 end
 
-class Mongo::ObjectID
+class BSON::ObjectID
   def <=>(object)
     self.to_s <=> object.to_s
   end

@@ -36,7 +36,7 @@ class Member
   #
   def notify_by_digest=(notify)
     write_attribute(:notify_by_digest, notify)
-    self.digest_send_at = Time.now if notify && !self.digest_send_at
+    self.digest_send_at = Time.now.utc if notify && !self.digest_send_at
     self.digest_send_at = nil unless notify
   end
 

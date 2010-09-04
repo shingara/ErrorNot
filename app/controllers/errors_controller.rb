@@ -17,7 +17,7 @@ class ErrorsController < ApplicationController
     if @error.update_attributes(params[:error])
       render :status => 200, :text => 'error create'
     else
-      render :status => 422, :text => @error.errors.full_messages
+      render :status => 422, :text => @error.errors.full_messages.to_json
     end
   end
 
@@ -46,6 +46,9 @@ class ErrorsController < ApplicationController
   [:backtrace, :request_info, :session_info, :data, :similar_error].each do |resum|
     define_method(resum) do
       @root_error = @error = @project.error_reports.find(params[:id])
+      if resum == :similar_error
+        @similar_errors =  @error.same_errors_most_recent(params['page'])
+      end
     end
   end
 

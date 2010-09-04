@@ -130,9 +130,9 @@ describe Error do
     it 'should return last raised_at of error_embedded if error has error_embedded' do
       error = Factory(:error, :raised_at => 3.days.ago)
       error.same_errors.create(:raised_at => 2.days.ago)
-      last_raised = error.same_errors.create(:raised_at => 1.day.ago).raised_at
-      error.reload
-      error.last_raised_at.should == last_raised
+      error.same_errors.create(:raised_at => 1.day.ago)
+
+      error.reload.last_raised_at.should be_close(1.day.ago, 2.second)
     end
   end
 
@@ -153,7 +153,7 @@ describe Error do
 
   describe '#unresolved_at' do
     it 'should be define when create' do
-      Factory(:error, :unresolved_at => nil).unresolved_at.should be_close(Time.now, 1.second)
+      Factory(:error, :raised_at => Time.now.utc, :unresolved_at => nil).unresolved_at.should be_close(Time.now.utc, 2.second)
     end
 
     it 'should not change if new same error added' do
@@ -172,31 +172,39 @@ describe Error do
       error.reload.unresolved_at.should == unresolved_at
     end
     it 'should not change if add comments' do
-      error = Factory(:error)
-      unresolved_at = error.unresolved_at
+      error = Factory(:error, :raised_at => 2.minutes.ago)
+
       error.comments.build(:user => error.project.members.first.user,
                            :text => 'why not')
       error.save!
-      error.reload.unresolved_at.should == unresolved_at
+
+      error.reload.unresolved_at.should be_close(2.minutes.ago, 2.seconds)
     end
     it 'should change if new same error added but mark as resolved before' do
+      time_travel_to(3.minutes.ago)
       error = Factory(:error)
-      unresolved_at = error.unresolved_at
+
+      time_travel_to(2.minutes.ago)
       error.resolved = true
       error.save
+
+      back_to_the_present
       error.resolved = false
       error.save
-      error.reload.unresolved_at.should_not == unresolved_at
+
+      error.reload.unresolved_at.should be_close(Time.now, 1.second)
     end
 
     it 'should works with resolved = "true" by string not bool' do
+      time_travel_to(3.minutes.ago)
       error = Factory(:error)
-      unresolved_at = error.unresolved_at
+      time_travel_to(2.minutes.ago)
       error.resolved = 'true'
       error.save
+      back_to_the_present
       error.resolved = 'false'
       error.save
-      error.reload.unresolved_at.should_not == unresolved_at
+      error.reload.unresolved_at.should be_close(Time.now.utc, 2.seconds)
     end
   end
 

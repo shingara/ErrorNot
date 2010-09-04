@@ -33,3 +33,4 @@ config.gem "randexp"
 config.gem "factory_girl"
 config.gem 'email_spec', :lib => 'email_spec', :version => '0.4.0'
 config.gem "mocha", :version => '0.9.8'
+config.gem "delorean"
