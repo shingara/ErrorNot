@@ -30,7 +30,7 @@ Rails::Initializer.run do |config|
 
   config.gem "mongo", :lib => 'mongo', :version => '1.0.1'
   config.gem "bson_ext", :lib => 'bson', :version => '1.0.1'
-  config.gem "plucky"
+  config.gem "plucky", :version => '0.1.1'
   config.gem "mongo_mapper", :version => '0.7.6'
   config.gem "haml", :version => '2.2.21'
   config.gem "warden", :version => '0.10.5'
