@@ -9,8 +9,8 @@ class UserMailer < ActionMailer::Base
 
   def project_removal(removed_email, remover_email, project)
     @project = project
-    @remover_email = emover_email
-    mail(:to => remover_email,
+    @remover_email = remover_email
+    mail(:to => removed_email,
          :subject => "[#{project.name}] Good bye")
   end
 
