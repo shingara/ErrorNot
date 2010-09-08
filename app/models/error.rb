@@ -55,7 +55,11 @@ class Error
   after_create :send_notify
 
   after_save :update_nb_errors_in_project
-  after_save :update_keywords
+  #after_save :update_keywords
+
+  scope :not_send_by_digest_since, lambda {|date|
+    where({:unresolved_at => {'$gt' => date.utc},
+      :resolved => false}).order_by('last_raised_at')}
 
 
   def url

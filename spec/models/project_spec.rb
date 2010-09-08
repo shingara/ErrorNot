@@ -2,13 +2,9 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 describe Project do
 
-  describe 'Field' do
-    ['nb_errors_reported', 'nb_errors_resolved', 'nb_errors_unresolved'].each do |field|
-      it "should have field #{field}" do
-        assert Project.keys.keys.include?(field)
-      end
-    end
-  end
+  it { should have_field(:nb_errors_unresolved).of_type(Integer) }
+  it { should have_field(:nb_errors_resolved).of_type(Integer) }
+  it { should have_field(:nb_errors_reported).of_type(Integer) }
 
   describe 'Validation' do
     it 'should have valid factory' do
@@ -37,15 +33,13 @@ describe Project do
   end
 
   describe '#add_admin_member(user)' do
-    before do
-      @project = Factory(:project)
-      @user = Factory(:user)
-    end
+    let(:project) { Factory(:project) }
+    let(:user) { Factory(:user) }
     it 'should add a member define like admin' do
       lambda do
-        @project.add_admin_member(@user)
-      end.should change(@project.members, :count)
-      @project.members.detect{|m| m.user_id == @user.id }.should be_admin
+        project.add_admin_member(user)
+      end.should change(project.members, :size)
+      project.members.where(:user_id => user.id).first.should be_admin
     end
   end
 
@@ -224,8 +218,8 @@ describe Project do
     end
 
     it 'should send an email to email which no in register' do
-      UserMailer.expects(:deliver_project_invitation).with("yahoo@yahoo.org",
-                                                                  @project)
+      UserMailer.expects(:project_invitation).with("yahoo@yahoo.org",
+                                                   @project).returns(mock(:deliver => true))
       @project.add_member_by_email(' foo@example.com, yahoo@yahoo.org ')
       @project.reload
       @project.member_include?(@user_1).should be_true
@@ -234,7 +228,7 @@ describe Project do
     end
 
     it "should create member object with only email data in member's project" do
-      UserMailer.expects(:deliver_project_invitation).with('yahoo@yahoo.org', @project)
+      UserMailer.expects(:project_invitation).with('yahoo@yahoo.org', @project).returns(mock(:deliver => true))
       lambda do
         @project.add_member_by_email('yahoo@yahoo.org')
       end.should change(@project.members, :size)
@@ -401,7 +395,7 @@ describe Project do
                      :project => project) }
       error_not_send = 2.of { Factory(:error, :unresolved_at => 2.minutes.ago.utc, :project => project).reload }
       project.reload
-      project.error_reports.not_send_by_digest_since(3.minutes.ago.utc).should == error_not_send.sort_by(&:last_raised_at)
+      project.error_reports.not_send_by_digest_since(3.minutes.ago.utc).all.map(&:id).should == error_not_send.sort_by(&:last_raised_at).map(&:id)
     end
   end
 

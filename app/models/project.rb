@@ -62,9 +62,9 @@ class Project
 
   def remove_member!(data={:user => nil, :email => nil})
     if data.key? :email
-      members.delete_if{ |member| member.email == data[:email] }
+      members.destroy_all(:email => data[:email])
     elsif data.key? :user
-      members.delete_if{ |member| member.user_id.to_s == data[:user].id.to_s }
+      members.where(:user_id => data[:user].id).map(&:destroy)
     end
     save
   end

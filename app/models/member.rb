@@ -19,7 +19,9 @@ class Member
 
   validates_presence_of :user_id, :if => Proc.new { email.blank? }
 
+
   before_save :update_data
+  before_save :need_admin_members
 
   def update_data
     unless user_id
@@ -53,6 +55,10 @@ class Member
     self.digest_send_at = Time.now.utc
     self.save
     true
+  end
+
+  def need_admin_members
+    errors.add(:admin, 'last admin of this project') unless parent.members.any?{ |m| m.admin }
   end
 
 end
