@@ -100,7 +100,7 @@ class Project
   end
 
   def member(user)
-    members.detect{|member| member.user_id == user.id }
+    members.where(:user_id => user.id).first
   end
 
   ##

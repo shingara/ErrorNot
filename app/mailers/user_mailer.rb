@@ -4,7 +4,7 @@ class UserMailer < ActionMailer::Base
     @email = email
     @project = project
     mail(:to => email,
-         :subject => "[#{APP_NAME}] invitation on project #{project.name}")
+         :subject => "[#{Errornot::Application.config.app_name}] invitation on project #{project.name}")
   end
 
   def project_removal(removed_email, remover_email, project)

@@ -44,7 +44,7 @@ class User
   #
   def check_member_project
     Project.where('members.email' => self.email).all.each do |project|
-      member = project.members.detect{ |member| member.email == self.email }
+      member = project.members.where(:email => self.email).first
       if member.user_id.blank? || member.status != Member::VALIDATE
         # We need save member if member not validate
         # it's member who check if user is or not validate

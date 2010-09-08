@@ -29,16 +29,16 @@ Errornot::Application.routes.draw do
         end
       end
     end
-
-
-    resources :errors, :only => [:create, :update]
-
-    devise_for :users
-    resources :user do
-      collection do
-        put :update_notify
-      end
-    end
-    root :to => 'projects#index'
   end
+
+
+  resources :errors, :only => [:create, :update]
+
+  devise_for :users
+  resources :user do
+    collection do
+      put :update_notify
+    end
+  end
+  root :to => 'projects#index'
 end

@@ -102,7 +102,7 @@ describe User do
 
     it 'should made all project with no notify if args is an empty array' do
       @user.update_notify(:email => [],
-                                       :removal => [])
+                          :removal => [])
       @project.reload.member(@user).notify_by_email.should be_false
       @project_2.reload.member(@user).notify_by_email.should be_false
       @project.reload.member(@user).notify_removal_by_email.should be_false

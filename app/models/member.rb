@@ -15,8 +15,11 @@ class Member
 
   index :user_id
   referenced_in :user
+  embedded_in :project, :inverse_of => :members
 
   validates_presence_of :user_id, :if => Proc.new { email.blank? }
+
+  before_save :update_data
 
   def update_data
     unless user_id
