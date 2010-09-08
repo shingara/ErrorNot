@@ -2,11 +2,11 @@ require File.dirname(__FILE__) + '/../spec_helper'
 
 describe Comment do
 
-  ['user_id', 'user_email', 'text', 'created_at'].each do |field|
-    it "should have field #{field}" do
-      assert Comment.keys.keys.include?(field)
-    end
-  end
+
+  it { should have_field(:user_id).of_type(BSON::ObjectId) }
+  it { should have_field(:user_email).of_type(String) }
+  it { should have_field(:text).of_type(String) }
+  it { should have_field(:created_at).of_type(Date) }
 
   def make_comment_with_text(text)
     @user = make_user

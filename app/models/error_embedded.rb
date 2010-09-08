@@ -1,13 +1,17 @@
 class ErrorEmbedded
-  include MongoMapper::Document
+  include Mongoid::Document
 
-  key :session, Hash
-  key :raised_at, Time, :required => true
-  key :request, Hash
-  key :environment, Hash
-  key :data, Hash
+  field :session, :type => Hash
+  field :raised_at, :type => Time
+  field :request, :type => Hash
+  field :environment, :type => Hash
+  field :data, :type => Hash
 
-  belongs_to :root_error, :class_name => 'Error', :foreign_key => 'error_id'
+  validates_presence_of :raised_at
+
+  referenced_in :root_error, :class_name => 'Error', :inverse_of => :same_error, :foreign_key => 'error_id'
+
+  index :error_id
 
   delegate :last_raised_at, :to => :root_error
   delegate :same_errors, :to => :root_error

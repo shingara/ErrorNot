@@ -1,20 +1,20 @@
 class Member
-  include MongoMapper::EmbeddedDocument
+  include Mongoid::Document
 
-  key :admin, Boolean
-  key :notify_by_email, Boolean, :default => true
-  key :notify_removal_by_email, Boolean, :default => true
-  key :notify_by_digest, Boolean, :default => false
-  key :digest_send_at, Time
-  key :email, String
-  key :status, Integer, :default => 0
+  field :admin, :type => Boolean
+  field :notify_by_email, :type => Boolean, :default => true
+  field :notify_removal_by_email, :type => Boolean, :default => true
+  field :notify_by_digest, :type => Boolean, :default => false
+  field :digest_send_at, :type => Time
+  field :email, :type => String
+  field :status, :type => Integer, :default => 0
 
   AWAITING = 0
   UNVALIDATE = 1
   VALIDATE = 2
 
-  key :user_id, ObjectId
-  belongs_to :user
+  index :user_id
+  referenced_in :user
 
   validates_presence_of :user_id, :if => Proc.new { email.blank? }
 
@@ -46,7 +46,7 @@ class Member
   def send_digest
     return unless notify_by_digest
     errors = self._root_document.error_reports.not_send_by_digest_since(self.digest_send_at)
-    UserMailer.deliver_error_digest_notify(self.email, errors) unless errors.empty?
+    UserMailer.error_digest_notify(self.email, errors).deliver unless errors.empty?
     self.digest_send_at = Time.now.utc
     self.save
     true

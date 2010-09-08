@@ -1,6 +1,6 @@
 class User
 
-  include MongoMapper::Document
+  include Mongoid::Document
 
   ## Include default devise modules.
   ## Others available are :lockable, :timeoutable and :activatable.
@@ -11,7 +11,7 @@ class User
 
 
   def member_projects
-    Project.all('members.user_id' => self.id)
+    Project.where('members.user_id' => self.id).all
   end
 
   ##
@@ -43,7 +43,7 @@ class User
   # or has no user_id
   #
   def check_member_project
-    Project.all('members.email' => self.email).each do |project|
+    Project.where('members.email' => self.email).all.each do |project|
       member = project.members.detect{ |member| member.email == self.email }
       if member.user_id.blank? || member.status != Member::VALIDATE
         # We need save member if member not validate

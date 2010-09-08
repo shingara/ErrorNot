@@ -1,14 +1,17 @@
 class Comment
 
-  include MongoMapper::EmbeddedDocument
+  include Mongoid::Document
 
-  key :user_id, ObjectId
-  key :text, String, :required => true
+  field :text, :type => String
   # generate data
-  key :user_email, String
-  key :created_at, Time
+  field :user_email, :type => String
+  field :created_at, :type => Time
 
-  belongs_to :user
+  validates_presence_of :text
+  index :user_id
+
+  referenced_in :user
+  embedded_in :error, :inverse_of => :comments
 
   validate :user_is_member_of_project
 
@@ -29,7 +32,7 @@ class Comment
 
   def user_is_member_of_project
     unless self.created_at
-      errors.add(:user, 'cant_access') unless self._root_document.project.member_include?(user)
+      errors.add(:user, 'cant_access') unless self._parent.project.member_include?(user)
     end
   end
 

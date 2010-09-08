@@ -66,6 +66,8 @@ GEM
       mime-types
       treetop (>= 1.4.5)
     mime-types (1.16)
+    mocha (0.9.8)
+      rake
     mongo (1.0.7)
       bson (>= 1.0.4)
     mongoid (2.0.0.beta.17)
@@ -74,6 +76,10 @@ GEM
       mongo (= 1.0.7)
       tzinfo (~> 0.3.22)
       will_paginate (~> 3.0.pre)
+    mongoid-rspec (1.2.1)
+      bson_ext (>= 1.0.4)
+      mongoid (>= 2.0.0.beta.15)
+      rspec (>= 2.0.0.beta.19)
     polyglot (0.3.1)
     rack (1.2.1)
     rack-mount (0.6.13)
@@ -128,7 +134,9 @@ DEPENDENCIES
   factory_girl
   factory_girl_rails
   haml
+  mocha
   mongoid (= 2.0.0.beta.17)
+  mongoid-rspec
   rails (= 3.0.0)
   randexp
   rspec

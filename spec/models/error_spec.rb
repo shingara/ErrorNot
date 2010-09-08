@@ -77,7 +77,7 @@ describe Error do
       project = make_project_with_admin(user)
       error = Factory(:error, :resolved => true,
                      :project => project)
-      UserMailer.expects(:deliver_error_notify).with{ |email, error|
+      UserMailer.expects(:error_notify).with{ |email, error|
         email == user.email && error.kind_of?(Error)
       }.never
       error.resolved!
@@ -90,7 +90,7 @@ describe Error do
       error = Factory(:error, :resolved => true,
                      :project => project)
       error.resolved!
-      UserMailer.expects(:deliver_error_notify).with{ |email, error|
+      UserMailer.expects(:error_notify).with{ |email, error|
         email == user.email && error.kind_of?(Error)
       }.never
       error.resolved = false
@@ -103,9 +103,9 @@ describe Error do
     it 'should send email to all member with notify_by_email is true' do
       user = make_user
       project = make_project_with_admin(user)
-      UserMailer.expects(:deliver_error_notify).with{ |email, error|
+      UserMailer.expects(:error_notify).with{ |email, error|
         email == user.email && error.kind_of?(Error)
-      }
+      }.returns(mock(:deliver => true))
       Factory(:error, :project => project)
     end
 
@@ -114,9 +114,9 @@ describe Error do
       project = make_project_with_admin(user)
       project.members.build(:user => make_user, :notify_by_email => false)
       project.save!
-      UserMailer.expects(:deliver_error_notify).with{ |email, error|
+      UserMailer.expects(:error_notify).with{ |email, error|
         email == user.email && error.kind_of?(Error)
-      }
+      }.returns(mock(:deliver => true))
       Factory(:error, :project => project)
     end
   end
@@ -225,7 +225,7 @@ describe Error do
       error = Factory(:error)
       error.resolved = true
       error.save
-      error.resolved_at.should be_close(Time.now, 1.second)
+      error.resolved_at.should be_close(Time.now, 2.second)
       time = error.resolved_at
       error.resolved = true
       error.save

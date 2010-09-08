@@ -4,6 +4,7 @@ fr:
       link: 'Se connecter'
       signed_in: 'Connection réussie.'
       signed_out: 'Déconnection réussie.'
+    failure:
       unauthenticated: 'Vous avez besoin de vous connecter ou déconnecter pour continuer.'
       unconfirmed: 'Vous devez confirmer votre compte avant de continuer.'
       locked: 'Votre compte est clos.'
@@ -23,6 +24,9 @@ fr:
       send_instructions: "Vous allez recevoir par email d'ici quelque minutes un email d'instruction pour débloquer votre compte."
       unlocked: 'Votre compte a été débloqué avec succès. Vous pouvez vous connecter.'
     mailer:
-      confirmation_instructions: 'Instruction de confirmation'
-      reset_password_instructions: 'Instruction de réinitialisation de mot de passe'
-      unlock_instructions: 'Instruction de déblocage de votre compte.'
+      confirmation_instructions:
+        subject: 'Instruction de confirmation'
+      reset_password_instructions:
+        subject: 'Instruction de réinitialisation de mot de passe'
+      unlock_instructions:
+        subject:'Instruction de déblocage de votre compte.'

@@ -16,4 +16,6 @@ group :test do
   gem 'factory_girl_rails'
   gem 'email_spec'
   gem 'delorean'
+  gem 'mongoid-rspec'
+  gem 'mocha'
 end

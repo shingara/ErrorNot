@@ -1,36 +1,50 @@
+require 'errornot/callbacks/error_callback'
 class Error
-  include MongoMapper::Document
-  include Callbacks::ErrorCallback
+  include Mongoid::Document
+  include Mongoid::Timestamps
 
-  key :resolved, Boolean, :index => true
-  key :session, Hash
-  key :raised_at, Time, :required => true
-  key :backtrace, Array
-  key :request, Hash
-  key :environment, Hash
-  key :data, Hash
-  key :unresolved_at, Time
-  key :resolved_at, Time
-  key :resolveds_at, Array
+  include Errornot::Callbacks::ErrorCallback
 
-  key :message, String, :required => true
+  field :resolved, :type => Boolean, :default => false
+  field :session, :type => Hash, :default => {}
+  field :raised_at, :type => Time
+  field :backtrace, :type => Array, :default => []
+  field :request, :type => Hash, :default => {}
+  field :environment, :type => Hash, :default => {}
+  field :data, :type => Hash, :default => {}
+  field :unresolved_at, :type => Time
+  field :resolved_at, :type => Time
+  field :resolveds_at, :type => Array, :default => []
+
+  field :message, :type => String
 
   # Denormalisation
-  key :_keywords, Array, :index => true, :default => []
-  key :last_raised_at, Time
+  field :_keywords, :type => Array, :default => []
+  field :last_raised_at, :type => Time
 
-  key :project_id, ObjectId, :required => true, :index => true
-  belongs_to :project
 
-  has_many :comments
-  include_errors_from :comments
+  index :resolved
+  index :_keyords
+  index :project_id
+  index :raised_at
 
-  has_many :same_errors, :class_name => 'ErrorEmbedded'
-  include_errors_from :same_errors
+  validates_presence_of :project_id
+  validates_presence_of :message
+  validates_presence_of :raised_at
+  validates_associated :comments
+
+  referenced_in :project
+  embeds_many :comments
+
+  references_many :same_errors, :class_name => 'ErrorEmbedded'
+
 
   # To keep track of some metrics:
-  key :nb_comments, Integer, :required => true, :default => 0
-  key :count, Integer, :required => true, :default => 1 # nb of same errors
+  field :nb_comments, :type => Integer, :default => 0
+  field :count, :type => Integer, :default => 1 # nb of same errors
+
+  validates_presence_of :nb_comments
+  validates_presence_of :count
 
   ## Callback
   before_validation :update_last_raised_at
@@ -43,7 +57,6 @@ class Error
   after_save :update_nb_errors_in_project
   after_save :update_keywords
 
-  timestamps!
 
   def url
     request['url']
@@ -91,7 +104,7 @@ class Error
   def send_notify_task
     Project.find(project_id).members.each do |member|
       if member.notify_by_email?
-        UserMailer.deliver_error_notify(member.email, self)
+        UserMailer.error_notify(member.email, self).deliver
       end
     end
   end
